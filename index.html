@@ -3,14 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bird Game</title>
+    <title>BIRD KUM SI WOW</title>
     <style>
-        body { margin: 0; }
-        canvas { display: block; }
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+        canvas {
+            background-color: #87CEEB;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="650"></canvas>
-    <script src="game.js"></script>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // ตั้งค่าพื้นฐาน
+        const WIDTH = canvas.width;
+        const HEIGHT = canvas.height;
+
+        let birdY = HEIGHT / 2;
+        let birdVelocity = 0;
+        const gravity = 0.5;
+        const jumpStrength = -10;
+        let score = 0;
+        const pipeWidth = 100;
+        const pipeGap = 200;
+        const pipeVelocity = 4;
+        let pipes = [];
+        let birdImg = new Image();
+        birdImg.src = 'Background/Fighter.png'; // โหลดภาพนก
+
+        // ตั้งเวลาและความเร็วการทำงาน
+        let lastTime = 0;
+
+        function createPipe() {
+            const height = Math.floor(Math.random() * (HEIGHT - pipeGap - 100)) + 50;
+            const topPipe = { x: WIDTH, y: 0, width: pipeWidth, height: height };
+            const bottomPipe = { x: WIDTH, y: height + pipeGap, width: pipeWidth, height: HEIGHT - height - pipeGap };
+            return [topPipe, bottomPipe];
+        }
+
+        function drawBird() {
+            ctx.drawImage(birdImg, 50, birdY, 90, 50);
+        }
+
+        function drawPipes() {
+            pipes.forEach(pipe => {
+                ctx.fillStyle = 'green'; // เปลี่ยนสีท่อ
+                ctx.fillRect(pipe[0].x, pipe[0].y, pipe[0].width, pipe[0].height); // ท่อบน
+                ctx.fillRect(pipe[1].x, pipe[1].y, pipe[1].width, pipe[1].height); // ท่อล่าง
+            });
+        }
+
+        function movePipes() {
+            pipes.forEach(pipe => {
+                pipe[0].x -= pipeVelocity;
+                pipe[1].x -= pipeVelocity;
+            });
+        }
+
+        function checkCollisions() {
+            let birdRect = { x: 50, y: birdY, width: 90, height: 50 };
+            pipes.forEach(pipe => {
+                let topPipeRect = { x: pipe[0].x, y: pipe[0].y, width: pipe[0].width, height: pipe[0].height };
+                let bottomPipeRect = { x: pipe[1].x, y: pipe[1].y, width: pipe[1].width, height: pipe[1].height };
+
+                if (rectsIntersect(birdRect, topPipeRect) || rectsIntersect(birdRect, bottomPipeRect)) {
+                    gameOver();
+                }
+            });
+        }
+
+        function rectsIntersect(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                rect1.x + rect1.width > rect2.x &&
+                rect1.y < rect2.y + rect2.height &&
+                rect1.y + rect1.height > rect2.y;
+        }
+
+        function gameOver() {
+            alert('Game Over! Score: ' + score);
+            pipes = [];
+            score = 0;
+            birdY = HEIGHT / 2;
+            birdVelocity = 0;
+        }
+
+        function updateGameArea() {
+            ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+            birdVelocity += gravity;
+            birdY += birdVelocity;
+
+            if (birdY <= 0) birdY = 0;
+            if (birdY >= HEIGHT - 50) birdY = HEIGHT - 50;
+
+            movePipes();
+            drawBird();
+            drawPipes();
+            checkCollisions();
+
+            if (pipes.length && pipes[0][0].x < -pipeWidth) {
+                pipes.shift();
+                pipes.push(createPipe());
+                score++;
+            }
+
+            ctx.fillStyle = "white";
+            ctx.font = "25px Arial";
+            ctx.fillText("Score: " + score, 10, 30);
+
+            requestAnimationFrame(updateGameArea);
+        }
+
+        function startGame() {
+            pipes.push(createPipe());
+            requestAnimationFrame(updateGameArea);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                birdVelocity = jumpStrength;
+            }
+        });
+
+        startGame();
+    </script>
 </body>
 </html>
