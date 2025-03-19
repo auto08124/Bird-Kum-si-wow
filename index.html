@@ -23,7 +23,7 @@
 <body>
   <canvas id="gameCanvas" width="800" height="650"></canvas>
   <script>
-  
+    // ตั้งค่าพื้นฐานของเกม
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
@@ -59,9 +59,11 @@
       new Audio('Background/SOUND/AUN1.mp3')
     ];
 
+    // ฟอนต์
     const font = "25px Arial";
     const gameOverFont = "64px Arial";
 
+    // สร้างท่อ
     function createPipe() {
       const height = Math.random() * (HEIGHT - pipeGap - 100) + 100;
       const topPipe = { x: WIDTH, y: 0, width: pipeWidth, height };
@@ -69,6 +71,7 @@
       return [topPipe, bottomPipe];
     }
 
+    // การเคลื่อนที่ของท่อ
     function movePipes(pipes) {
       pipes.forEach(pipe => {
         pipe[0].x -= pipeVelocity;
@@ -76,6 +79,7 @@
       });
     }
 
+    // การวาดท่อ
     function drawPipes(pipes) {
       pipes.forEach(pipe => {
         ctx.drawImage(pipeImg, pipe[0].x, pipe[0].y, pipe[0].width, pipe[0].height);
@@ -83,10 +87,12 @@
       });
     }
 
+    // การวาดนก
     function drawBird() {
       ctx.drawImage(birdImg, birdX, birdY, 90, 50);
     }
 
+    // การแสดงข้อความ Game Over
     function showGameOver() {
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
       ctx.drawImage(backgroundImg, 0, 0, WIDTH, HEIGHT);
@@ -106,6 +112,7 @@
       ctx.fillText("Press Q to Quit", WIDTH / 2 - 100, HEIGHT / 2 + 90);
     }
 
+    // การเริ่มเกมใหม่
     function resetGame() {
       birdY = HEIGHT / 2;
       birdVelocity = 0;
@@ -113,12 +120,13 @@
       return [createPipe()];
     }
 
+    // การทำงานหลักของเกม
     function gameLoop() {
       let pipes = resetGame();
       let runGame = true;
 
       function gameStep() {
-        if (!runGame) return;
+        if (!runGame) return;  // If the game has ended, stop further execution
 
         birdVelocity += gravity;
         birdY += birdVelocity;
@@ -133,6 +141,7 @@
         }
 
         movePipes(pipes);
+
         if (pipes[0][0].x < -pipeWidth) {
           pipes.shift();
           pipes.push(createPipe());
@@ -141,20 +150,28 @@
         }
 
         const birdRect = { x: birdX, y: birdY, width: 90, height: 50 };
+
         for (let pipe of pipes) {
           if (collision(birdRect, pipe[0]) || collision(birdRect, pipe[1])) {
             lastScore = score;
             if (score > highScore) highScore = score;
 
+            // เลือกเสียง Game Over แบบสุ่ม
             const gameOverSound = gameOverSounds[Math.floor(Math.random() * gameOverSounds.length)];
             gameOverSound.play();
-            showGameOver();
 
+            // Stop the game over sound after 5 seconds
             setTimeout(() => {
-              gameOverSound.stop();
+              gameOverSound.pause();
+              gameOverSound.currentTime = 0; // Reset the sound to the beginning
             }, 5000);
 
-            runGame = false;
+            // After the game ends, stop the game loop after 5 seconds
+            setTimeout(() => {
+              runGame = false;
+              showGameOver();  // Show the game over screen after game stops
+            }, 5000);
+
             break;
           }
         }
@@ -167,12 +184,15 @@
         ctx.fillStyle = "white";
         ctx.fillText("Score: " + score, 10, 30);
 
-        requestAnimationFrame(gameStep);
+        if (runGame) {
+          requestAnimationFrame(gameStep);  // Only continue the game loop if runGame is true
+        }
       }
 
       gameStep();
     }
 
+    // ฟังก์ชันตรวจจับการชน
     function collision(birdRect, pipe) {
       return birdRect.x < pipe.x + pipe.width &&
              birdRect.x + birdRect.width > pipe.x &&
@@ -180,7 +200,7 @@
              birdRect.y + birdRect.height > pipe.y;
     }
 
-
+    // เริ่มเกมเมื่อโหลดหน้า
     window.onload = () => {
       window.addEventListener('keydown', (e) => {
         if (e.key === ' ') {
