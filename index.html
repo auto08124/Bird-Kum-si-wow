@@ -112,66 +112,72 @@
       return [createPipe()];
     }
 
-    function gameLoop() {
-      let pipes = resetGame();
-      let runGame = true;
+// การทำงานหลักของเกม
+function gameLoop() {
+  let pipes = resetGame();
+  let runGame = true;
 
-      function gameStep() {
-        if (!runGame) return;
+  function gameStep() {
+    if (!runGame) return;
 
-        birdVelocity += gravity;
-        birdY += birdVelocity;
+    birdVelocity += gravity;
+    birdY += birdVelocity;
 
-        if (birdY <= 0) {
-          birdY = 0;
-          birdVelocity = 0;
-        }
-        if (birdY >= HEIGHT - 50) {
-          birdY = HEIGHT - 50;
-          birdVelocity = 0;
-        }
-
-        movePipes(pipes);
-        if (pipes[0][0].x < -pipeWidth) {
-          pipes.shift();
-          pipes.push(createPipe());
-          score++;
-          scoreSound.play();
-        }
-
-        const birdRect = { x: birdX, y: birdY, width: 90, height: 50 };
-        for (let pipe of pipes) {
-          if (collision(birdRect, pipe[0]) || collision(birdRect, pipe[1])) {
-            lastScore = score;
-            if (score > highScore) highScore = score;
-
-            const gameOverSound = gameOverSounds[Math.floor(Math.random() * gameOverSounds.length)];
-            gameOverSound.play();
-            showGameOver();
-
-            setTimeout(() => {
-              gameOverSound.pause();
-              gameOverSound.currentTime = 0;
-            }, 5000);
-
-            runGame = false;
-            break;
-          }
-        }
-
-        ctx.clearRect(0, 0, WIDTH, HEIGHT);
-        ctx.drawImage(backgroundImg, 0, 0, WIDTH, HEIGHT);
-        drawBird();
-        drawPipes(pipes);
-        ctx.font = font;
-        ctx.fillStyle = "white";
-        ctx.fillText("Score: " + score, 10, 30);
-
-        requestAnimationFrame(gameStep);
-      }
-
-      gameStep();
+    if (birdY <= 0) {
+      birdY = 0;
+      birdVelocity = 0;
     }
+    if (birdY >= HEIGHT - 50) {
+      birdY = HEIGHT - 50;
+      birdVelocity = 0;
+    }
+
+    movePipes(pipes);
+    if (pipes[0][0].x < -pipeWidth) {
+      pipes.shift();
+      pipes.push(createPipe());
+      score++;
+      scoreSound.play();
+    }
+
+    const birdRect = { x: birdX, y: birdY, width: 90, height: 50 };
+    for (let pipe of pipes) {
+      if (collision(birdRect, pipe[0]) || collision(birdRect, pipe[1])) {
+        lastScore = score;
+        if (score > highScore) highScore = score;
+
+        // เลือกเสียง Game Over แบบสุ่ม
+        const gameOverSound = gameOverSounds[Math.floor(Math.random() * gameOverSounds.length)];
+        gameOverSound.play();
+
+        // Stop the game over sound after 5 seconds
+        setTimeout(() => {
+          gameOverSound.pause();
+          gameOverSound.currentTime = 0; // Reset to the beginning
+        }, 5000);
+
+        showGameOver();
+
+        setTimeout(() => {
+          runGame = false;
+        }, 5000); // Wait for a while before stopping the game loop
+        break;
+      }
+    }
+
+    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    ctx.drawImage(backgroundImg, 0, 0, WIDTH, HEIGHT);
+    drawBird();
+    drawPipes(pipes);
+    ctx.font = font;
+    ctx.fillStyle = "white";
+    ctx.fillText("Score: " + score, 10, 30);
+
+    requestAnimationFrame(gameStep);
+  }
+
+  gameStep();
+}
 
     function collision(birdRect, pipe) {
       return birdRect.x < pipe.x + pipe.width &&
