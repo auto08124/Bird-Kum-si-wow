@@ -23,7 +23,6 @@
 <body>
   <canvas id="gameCanvas" width="800" height="650"></canvas>
   <script>
-    // ตั้งค่าพื้นฐานของเกม
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
@@ -59,11 +58,9 @@
       new Audio('Background/SOUND/AUN1.mp3')
     ];
 
-    // ฟอนต์
     const font = "25px Arial";
     const gameOverFont = "64px Arial";
 
-    // สร้างท่อ
     function createPipe() {
       const height = Math.random() * (HEIGHT - pipeGap - 100) + 100;
       const topPipe = { x: WIDTH, y: 0, width: pipeWidth, height };
@@ -71,7 +68,6 @@
       return [topPipe, bottomPipe];
     }
 
-    // การเคลื่อนที่ของท่อ
     function movePipes(pipes) {
       pipes.forEach(pipe => {
         pipe[0].x -= pipeVelocity;
@@ -79,7 +75,6 @@
       });
     }
 
-    // การวาดท่อ
     function drawPipes(pipes) {
       pipes.forEach(pipe => {
         ctx.drawImage(pipeImg, pipe[0].x, pipe[0].y, pipe[0].width, pipe[0].height);
@@ -87,12 +82,10 @@
       });
     }
 
-    // การวาดนก
     function drawBird() {
       ctx.drawImage(birdImg, birdX, birdY, 90, 50);
     }
 
-    // การแสดงข้อความ Game Over
     function showGameOver() {
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
       ctx.drawImage(backgroundImg, 0, 0, WIDTH, HEIGHT);
@@ -112,7 +105,6 @@
       ctx.fillText("Press Q to Quit", WIDTH / 2 - 100, HEIGHT / 2 + 90);
     }
 
-    // การเริ่มเกมใหม่
     function resetGame() {
       birdY = HEIGHT / 2;
       birdVelocity = 0;
@@ -120,7 +112,6 @@
       return [createPipe()];
     }
 
-    // การทำงานหลักของเกม
     function gameLoop() {
       let pipes = resetGame();
       let runGame = true;
@@ -159,7 +150,8 @@
             showGameOver();
 
             setTimeout(() => {
-              gameOverSound.stop();
+              gameOverSound.pause();
+              gameOverSound.currentTime = 0;
             }, 5000);
 
             runGame = false;
@@ -181,7 +173,6 @@
       gameStep();
     }
 
-    // ฟังก์ชันตรวจจับการชน
     function collision(birdRect, pipe) {
       return birdRect.x < pipe.x + pipe.width &&
              birdRect.x + birdRect.width > pipe.x &&
@@ -189,7 +180,6 @@
              birdRect.y + birdRect.height > pipe.y;
     }
 
-    // เริ่มเกมเมื่อโหลดหน้า
     window.onload = () => {
       window.addEventListener('keydown', (e) => {
         if (e.key === ' ') {
